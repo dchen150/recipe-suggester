@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_app/main_screen.dart';
+import 'package:camera/camera.dart';
 
-void main() {
-  runApp(MyApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final cameras = await availableCameras();
+  final firstCamera = cameras.first;
+
+  runApp(MyApp(camera: firstCamera));
 }
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
+  final CameraDescription camera;
+
+  const MyApp({Key key, this.camera}) : super(key: key);
+
   @override
   Widget build(BuildContext context) => MaterialApp(
         theme: ThemeData(
@@ -14,6 +22,6 @@ class MyApp extends StatelessWidget {
           visualDensity: VisualDensity.adaptivePlatformDensity,
           fontFamily: 'Raleway',
         ),
-        home: MainScreen(),
+        home: MainScreen(camera: camera),
       );
 }
