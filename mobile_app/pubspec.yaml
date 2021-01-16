@@ -54,7 +54,6 @@ flutter:
     - assets/images/camera.png
     - assets/images/text.png
     - assets/images/fridge.png
-    - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
