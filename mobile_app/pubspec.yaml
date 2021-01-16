@@ -22,6 +22,9 @@ environment:
 
 dependencies:
   provider: ^4.3.2+4
+  flutter_dotenv: ^3.0.2
+  googleapis_auth: ^0.2.12
+  googleapis: ^0.56.1
   flutter:
     sdk: flutter
 
@@ -49,7 +52,8 @@ flutter:
     - assets/recipe.png
     - assets/camera.png
     - assets/text.png
-    
+    - .env
+
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
 
