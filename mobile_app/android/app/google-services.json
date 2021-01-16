@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "625164540387",
+    "project_id": "wish-a-dish-5dd7c",
+    "storage_bucket": "wish-a-dish-5dd7c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:625164540387:android:f8150a64d82ac2be0868d6",
+        "android_client_info": {
+          "package_name": "com.example.mobile_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "625164540387-842vm98s949icdm5sdq3g5gss8740keu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDP09qqO_H2fA0JZEdHhhdp4aMKcWf90Io"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "625164540387-842vm98s949icdm5sdq3g5gss8740keu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
