@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_app/home_page.dart';
+import 'package:mobile_app/main_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -12,7 +12,8 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
+          fontFamily: 'Raleway',
         ),
-        home: HomePage(),
+        home: MainScreen(),
       );
 }
