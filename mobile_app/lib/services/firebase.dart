@@ -17,7 +17,7 @@ class DatabaseService {
   }
 
   // get user stream/snapshot
-  Stream<DocumentSnapshot> get users {
+  Stream<DocumentSnapshot> get user {
     return usersCollection.doc(uid).snapshots();
   }
 }
