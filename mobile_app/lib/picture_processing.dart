@@ -2,13 +2,19 @@ import 'dart:io';
 import 'dart:convert';
 
 import 'package:camera/camera.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:mobile_app/main.dart';
+import 'package:mobile_app/services/firebase.dart';
+import 'package:provider/provider.dart';
 
 class TakePhotoScreen extends StatefulWidget {
   final CameraDescription camera;
+  final bool forReceipt;
 
-  const TakePhotoScreen({Key key, this.camera}) : super(key: key);
+  const TakePhotoScreen({Key key, this.camera, this.forReceipt = false})
+      : super(key: key);
 
   @override
   _TakePhotoScreenState createState() => _TakePhotoScreenState();
@@ -63,8 +69,10 @@ class _TakePhotoScreenState extends State<TakePhotoScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    DisplayPictureScreen(file: file),
+                                builder: (context) => DisplayPictureScreen(
+                                  file: file,
+                                  forReceipt: widget.forReceipt,
+                                ),
                               ),
                             );
                           }
@@ -97,8 +105,10 @@ class _TakePhotoScreenState extends State<TakePhotoScreen> {
 
 class DisplayPictureScreen extends StatefulWidget {
   final XFile file;
+  final bool forReceipt;
 
-  const DisplayPictureScreen({Key key, this.file}) : super(key: key);
+  const DisplayPictureScreen({Key key, this.file, this.forReceipt = false})
+      : super(key: key);
 
   @override
   _DisplayPictureScreenState createState() => _DisplayPictureScreenState();
@@ -107,10 +117,21 @@ class DisplayPictureScreen extends StatefulWidget {
 class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
   Future<Response> possibleFoods;
   TextEditingController addFoodController = TextEditingController();
+  List<String> ingredients;
+  DatabaseService db;
+
   @override
   void initState() {
     super.initState();
     possibleFoods = getPossibleFoods();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    db = DatabaseService(Provider.of<String>(context));
+    final userData = Provider.of<DocumentSnapshot>(context);
+    ingredients = DatabaseService.getIngredients(userData);
   }
 
   @override
@@ -150,7 +171,9 @@ class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
                                   Padding(
                                     padding: const EdgeInsets.only(top: 16),
                                     child: Text(
-                                      'Add food found in photo',
+                                      widget.forReceipt
+                                          ? 'Add food found in receipt'
+                                          : 'Add food found in photo',
                                       style: TextStyle(fontSize: 22),
                                       textAlign: TextAlign.center,
                                     ),
@@ -161,14 +184,16 @@ class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
                                       padding: EdgeInsets.zero,
                                       itemCount: suggestions.length,
                                       itemBuilder: (context, index) => InkWell(
-                                        onTap: () {
-                                          FocusScope.of(context).unfocus();
-                                          Scaffold.of(context).showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                  '${suggestions[index]} added'),
-                                            ),
-                                          );
+                                        onTap: () async {
+                                          if (!ingredients
+                                              .contains(suggestions[index])) {
+                                            String message =
+                                                await addIngredient(
+                                                    context, db, ingredients,
+                                                    ingredientToAdd:
+                                                        suggestions[index]);
+                                            showSnackBar(context, message);
+                                          }
                                         },
                                         child: Padding(
                                           padding: const EdgeInsets.symmetric(
@@ -181,7 +206,12 @@ class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
                                                 suggestions[index],
                                                 style: TextStyle(fontSize: 16),
                                               ),
-                                              Icon(Icons.add),
+                                              ingredients.contains(
+                                                      suggestions[index])
+                                                  ? Icon(Icons.check,
+                                                      color: Theme.of(context)
+                                                          .accentColor)
+                                                  : Icon(Icons.add),
                                             ],
                                           ),
                                         ),
@@ -191,15 +221,11 @@ class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
                                   Padding(
                                     padding: const EdgeInsets.only(bottom: 16),
                                     child: InkWell(
-                                      onTap: () {
-                                        FocusScope.of(context).unfocus();
-                                        Scaffold.of(context).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                                '${addFoodController.text} added'),
-                                          ),
-                                        );
-                                        addFoodController.clear();
+                                      onTap: () async {
+                                        String message = await addIngredient(
+                                            context, db, ingredients,
+                                            controller: addFoodController);
+                                        showSnackBar(context, message);
                                       },
                                       child: Row(
                                         mainAxisAlignment:
@@ -242,8 +268,9 @@ class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
       );
 
   Future<Response> getPossibleFoods() async {
-    final findFoodURL =
-        'https://us-central1-wish-a-dish-5dd7c.cloudfunctions.net/findFood';
+    final findFoodURL = widget.forReceipt
+        ? 'https://us-central1-wish-a-dish-5dd7c.cloudfunctions.net/readReceipt'
+        : 'https://us-central1-wish-a-dish-5dd7c.cloudfunctions.net/findFood';
     List<int> bytes = await widget.file.readAsBytes();
     String img64 = base64Encode(bytes);
     return post(findFoodURL, body: {'image': img64});
