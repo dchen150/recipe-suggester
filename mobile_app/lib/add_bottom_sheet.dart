@@ -1,7 +1,9 @@
-import 'dart:io';
+import 'dart:io' as Io;
+import 'dart:convert';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 
 class AddBottomSheet extends StatelessWidget {
   final CameraDescription camera;
@@ -170,7 +172,24 @@ class DisplayPictureScreen extends StatelessWidget {
     return Scaffold(
       // The image is stored as a file on the device. Use the `Image.file`
       // constructor with the given path to display the image.
-      body: Image.file(File(imagePath)),
+      body: FutureBuilder<Response>(
+          future: getGroceries(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              print(jsonDecode(snapshot.data.body)["objects"]);
+              return Container();
+            } else {
+              return Center(child: CircularProgressIndicator());
+            }
+          }),
     );
+  }
+
+  Future<Response> getGroceries() {
+    final findFoodURL =
+        'https://us-central1-wish-a-dish-5dd7c.cloudfunctions.net/findFood';
+    List<int> bytes = Io.File(this.imagePath).readAsBytesSync();
+    String img64 = base64Encode(bytes);
+    return post(findFoodURL, body: {'image': img64});
   }
 }
