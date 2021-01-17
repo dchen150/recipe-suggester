@@ -1,9 +1,6 @@
-import 'dart:io' as Io;
-import 'dart:convert';
-
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
+import 'package:mobile_app/picture_processing.dart';
 
 class AddBottomSheet extends StatelessWidget {
   final CameraDescription camera;
@@ -30,7 +27,12 @@ class AddBottomSheet extends StatelessWidget {
               ),
             ),
             InkWell(
-              onTap: () {},
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AddFoodDialog(),
+                );
+              },
               child: Row(
                 children: [
                   Padding(
@@ -50,9 +52,7 @@ class AddBottomSheet extends StatelessWidget {
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => TakePhotoScreen(
-                    camera: camera,
-                  ),
+                  builder: (context) => TakePhotoScreen(camera: camera),
                 ),
               ),
               child: Row(
@@ -75,121 +75,73 @@ class AddBottomSheet extends StatelessWidget {
       );
 }
 
-class TakePhotoScreen extends StatefulWidget {
-  final CameraDescription camera;
-
-  const TakePhotoScreen({Key key, this.camera}) : super(key: key);
-
+class AddFoodDialog extends StatefulWidget {
   @override
-  _TakePhotoScreenState createState() => _TakePhotoScreenState();
+  _AddFoodDialogState createState() => _AddFoodDialogState();
 }
 
-class _TakePhotoScreenState extends State<TakePhotoScreen> {
-  CameraController _controller;
-  Future<void> _initializeControllerFuture;
+class _AddFoodDialogState extends State<AddFoodDialog> {
+  TextEditingController addFoodController = TextEditingController();
+  String confirmMessage = '';
 
   @override
-  void initState() {
-    super.initState();
-
-    _controller = CameraController(
-      widget.camera,
-      ResolutionPreset.ultraHigh,
-    );
-    _initializeControllerFuture = _controller.initialize();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-        body: FutureBuilder(
-          future: _initializeControllerFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              return Stack(
-                alignment: Alignment.topCenter,
-                children: [
-                  CameraPreview(_controller),
-                  Positioned(
-                    bottom: 30,
-                    child: GestureDetector(
-                      onTap: () async {
-                        // Take the Picture in a try / catch block. If anything goes wrong,
-                        // catch the error.
-                        try {
-                          // Ensure that the camera is initialized.
-                          await _initializeControllerFuture;
-
-                          // Attempt to take a picture and log where it's been saved.
-                          XFile file = await _controller.takePicture();
-
-                          // If the picture was taken, display it on a new screen.
-                          if (file != null) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    DisplayPictureScreen(imagePath: file.path),
-                              ),
-                            );
-                          }
-                        } catch (e) {
-                          // If an error occurs, log the error to the console.
-                          print(e);
-                        }
-                      },
-                      child: Container(
-                        padding: EdgeInsets.all(30),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(100),
-                            border: Border.all(width: 4, color: Colors.white)),
-                        child: Container(color: Colors.transparent),
+  Widget build(BuildContext context) => Dialog(
+        child: Container(
+          height: 225,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Add food',
+                      style: TextStyle(fontSize: 20),
+                    ),
+                    GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      onTap: () => Navigator.pop(context),
+                      child: Icon(
+                        Icons.close,
+                        size: 25,
                       ),
                     ),
-                  )
-                ],
-              );
-            } else {
-              return Center(child: CircularProgressIndicator());
-            }
-          },
+                  ],
+                ),
+                SizedBox(height: 24),
+                TextField(
+                  controller: addFoodController,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Food',
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Text(
+                    confirmMessage,
+                    style: TextStyle(color: Theme.of(context).accentColor),
+                  ),
+                ),
+                Spacer(),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: RaisedButton(
+                    onPressed: () {
+                      FocusScope.of(context).unfocus();
+                      setState(() {
+                        confirmMessage = '${addFoodController.text} added!';
+                      });
+                      addFoodController.clear();
+                    },
+                    color: Theme.of(context).accentColor,
+                    child: Text('Add'),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       );
-}
-
-class DisplayPictureScreen extends StatelessWidget {
-  final String imagePath;
-
-  const DisplayPictureScreen({Key key, this.imagePath}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      // The image is stored as a file on the device. Use the `Image.file`
-      // constructor with the given path to display the image.
-      body: FutureBuilder<Response>(
-          future: getGroceries(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              print(jsonDecode(snapshot.data.body)["objects"]);
-              return Container();
-            } else {
-              return Center(child: CircularProgressIndicator());
-            }
-          }),
-    );
-  }
-
-  Future<Response> getGroceries() {
-    final findFoodURL =
-        'https://us-central1-wish-a-dish-5dd7c.cloudfunctions.net/findFood';
-    List<int> bytes = Io.File(this.imagePath).readAsBytesSync();
-    String img64 = base64Encode(bytes);
-    return post(findFoodURL, body: {'image': img64});
-  }
 }
