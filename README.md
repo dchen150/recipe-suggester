@@ -1,4 +1,8 @@
 # Wish A Dish
+
+## Demo
+https://www.youtube.com/watch?v=Eo_uqGk7HHk
+
 ## Inspiration
 The average home wastes $2000 worth of food a year! As a result of COVID, many individuals were panic buying which led to poor planning and even more money wasted. Another inspiration to this project is the social restrictions that now exist across the globe because of COVID. Hopefully this project can encourage people to cook at home instead of dining out.
 
