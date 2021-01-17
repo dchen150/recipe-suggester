@@ -1,6 +1,9 @@
 import 'package:camera/camera.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_app/picture_processing.dart';
+import 'package:mobile_app/services/firebase.dart';
+import 'package:provider/provider.dart';
 
 class AddBottomSheet extends StatelessWidget {
   final CameraDescription camera;
@@ -9,7 +12,7 @@ class AddBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        height: 180,
+        height: 225,
         child: Column(
           children: [
             Align(
@@ -52,7 +55,10 @@ class AddBottomSheet extends StatelessWidget {
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => TakePhotoScreen(camera: camera),
+                  builder: (context) => TakePhotoScreen(
+                    camera: camera,
+                    forReceipt: false,
+                  ),
                 ),
               ),
               child: Row(
@@ -69,6 +75,31 @@ class AddBottomSheet extends StatelessWidget {
                   Text('Add by photo'),
                 ],
               ),
+            ),
+            InkWell(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => TakePhotoScreen(
+                    camera: camera,
+                    forReceipt: true,
+                  ),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    child: Image.asset(
+                      'assets/images/receipt.jpg',
+                      height: 40,
+                      width: 40,
+                    ),
+                  ),
+                  Text('Add by receipt'),
+                ],
+              ),
             )
           ],
         ),
@@ -83,6 +114,16 @@ class AddFoodDialog extends StatefulWidget {
 class _AddFoodDialogState extends State<AddFoodDialog> {
   TextEditingController addFoodController = TextEditingController();
   String confirmMessage = '';
+  List<String> ingredients;
+  DatabaseService db;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    db = DatabaseService(Provider.of<String>(context));
+    final userData = Provider.of<DocumentSnapshot>(context);
+    ingredients = DatabaseService.getIngredients(userData);
+  }
 
   @override
   Widget build(BuildContext context) => Dialog(
@@ -128,12 +169,13 @@ class _AddFoodDialogState extends State<AddFoodDialog> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: RaisedButton(
-                    onPressed: () {
-                      FocusScope.of(context).unfocus();
+                    onPressed: () async {
+                      String message = await addIngredient(
+                          context, db, ingredients,
+                          controller: addFoodController);
                       setState(() {
-                        confirmMessage = '${addFoodController.text} added!';
+                        confirmMessage = message;
                       });
-                      addFoodController.clear();
                     },
                     color: Theme.of(context).accentColor,
                     child: Text('Add'),
