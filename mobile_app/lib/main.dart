@@ -23,11 +23,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MultiProvider(
         providers: [
-          Provider<String>.value(value: 'derekchen12'),
+          Provider<String>.value(value: '145'),
           StreamProvider<DocumentSnapshot>.value(
-              value: DatabaseService('derekchen12').userInfo),
+              value: DatabaseService('145').userInfo),
         ],
         child: MaterialApp(
+          debugShowCheckedModeBanner: false,
           theme: ThemeData(
             primarySwatch: Colors.green,
             visualDensity: VisualDensity.adaptivePlatformDensity,

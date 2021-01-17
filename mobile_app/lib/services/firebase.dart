@@ -49,14 +49,14 @@ class DatabaseService {
     return _splitIngredients(data['ingredients']);
   }
 
-  static String getRecipeId(DocumentSnapshot doc) {
+  static num getRecipeId(DocumentSnapshot doc) {
     final data = doc?.data();
 
-    if (data == null || data['recipes'] == null) {
-      return '';
+    if (data == null || data['recipeId'] == null) {
+      return -1;
     }
 
-    return data['recipes'];
+    return data['recipeId'];
   }
 
   static List<String> _splitIngredients(String ingredients) {

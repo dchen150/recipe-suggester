@@ -185,8 +185,11 @@ class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
                                       itemCount: suggestions.length,
                                       itemBuilder: (context, index) => InkWell(
                                         onTap: () async {
-                                          if (!ingredients
-                                              .contains(suggestions[index])) {
+                                          if (!ingredients.contains(
+                                              suggestions[index]
+                                                  .toLowerCase()
+                                                  .trim()
+                                                  .capFirstLetter())) {
                                             String message =
                                                 await addIngredient(
                                                     context, db, ingredients,

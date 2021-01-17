@@ -2,6 +2,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_app/home_page.dart';
 import 'package:mobile_app/add_bottom_sheet.dart';
+import 'package:mobile_app/recipe.dart';
 
 class MainScreen extends StatefulWidget {
   final CameraDescription camera;
@@ -33,7 +34,7 @@ class _MainScreenState extends State<MainScreen> {
                 if (currentTab == 0) {
                   currentPage = HomePage();
                 } else if (currentTab == 2) {
-                  currentPage = Container();
+                  currentPage = RecipeWrapper();
                 }
               });
             }
